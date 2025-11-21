@@ -9,7 +9,6 @@
 </head>
 <body>
   <div id="app">
-    <!-- Pantalla Inicial -->
     <div id="pantalla-inicial" class="pantalla active">
       <div class="container">
         <h1>🎭 Impostor Bíblico</h1>
@@ -25,7 +24,6 @@
       </div>
     </div>
 
-    <!-- Pantalla Lobby -->
     <div id="pantalla-lobby" class="pantalla">
       <div class="container">
         <h2>Sala: <span id="codigo-actual"></span></h2>
@@ -35,95 +33,36 @@
           <div id="selector-impostores" style="display: none;">
             <label>Número de impostores:</label>
             <div class="btn-group">
-              <button class="btn btn-small" data-impostores="1">1 Impostor</button>
-              <button class="btn btn-small" data-impostores="2">2 Impostores</button>
+              <button class="btn btn-small" data-impostores="1">1</button>
+              <button class="btn btn-small" data-impostores="2">2</button>
             </div>
           </div>
           <button id="btn-iniciar-partida" class="btn btn-primary" disabled>
-            Iniciar Partida (mín. 3 jugadores)
+            Iniciar Partida
           </button>
         </div>
         
-        <p class="info-text">Esperando jugadores...</p>
+        <p class="info-text">Esperando al anfitrión...</p>
       </div>
     </div>
 
-    <!-- Pantalla Personaje -->
     <div id="pantalla-personaje" class="pantalla">
       <div class="container center">
         <div id="card-personaje" class="card-grande">
           <h2 id="titulo-personaje"></h2>
           <div id="nombre-personaje"></div>
         </div>
-        <button id="btn-entendido" class="btn btn-primary">Entendido</button>
         
-        <div id="progreso-host" style="display: none; margin-top: 20px;">
-          <p class="info-text" id="texto-progreso">Esperando confirmaciones...</p>
-          <button id="btn-forzar-inicio" class="btn btn-secondary" style="margin-top: 10px;">
-            Forzar Inicio (Host)
+        <p class="info-text">¡Shhh! No reveles tu identidad.</p>
+
+        <div id="controles-finalizar" style="display: none; margin-top: 20px;">
+          <button id="btn-finalizar-partida" class="btn btn-secondary" style="background: #ff6b6b; color: white;">
+            Finalizar y Volver al Lobby
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Pantalla Ronda -->
-    <div id="pantalla-ronda" class="pantalla">
-      <div class="container">
-        <h2>💬 Ronda de Discusión</h2>
-        <div class="jugadores-vivos" id="jugadores-vivos-ronda"></div>
-        
-        <div id="controles-host-ronda" style="display: none;">
-          <button id="btn-abrir-votacion" class="btn btn-primary">Abrir Votación</button>
-        </div>
-        
-        <p class="info-text">Hablen sobre las pistas que tienen...</p>
-      </div>
-    </div>
-
-    <!-- Pantalla Votación -->
-    <div id="pantalla-votacion" class="pantalla">
-      <div class="container">
-        <h2>🗳️ Votación</h2>
-        <p class="info-text">¿A quién quieres eliminar?</p>
-        
-        <div id="opciones-voto" class="opciones-voto"></div>
-        
-        <div id="esperando-votos" style="display: none;">
-          <p class="info-text">Esperando a que todos voten...</p>
-          <div id="contador-votos"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pantalla Resultado -->
-    <div id="pantalla-resultado" class="pantalla">
-      <div class="container center">
-        <div class="card-grande resultado-card">
-          <h2 id="texto-resultado"></h2>
-          <div id="detalle-resultado"></div>
-        </div>
-        
-        <div id="btn-continuar-host" style="display: none;">
-          <button id="btn-continuar" class="btn btn-primary">Continuar</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pantalla Final -->
-    <div id="pantalla-final" class="pantalla">
-      <div class="container center">
-        <div class="card-grande final-card">
-          <h1 id="texto-ganador"></h1>
-          <div id="lista-impostores"></div>
-        </div>
-        
-        <div id="btn-volver-host" style="display: none;">
-          <button id="btn-volver-lobby" class="btn btn-primary">Volver al Lobby</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Mensajes de error -->
     <div id="toast" class="toast"></div>
   </div>
 
