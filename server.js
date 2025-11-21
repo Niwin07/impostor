@@ -180,6 +180,21 @@ io.on('connection', (socket) => {
         esImpostor: jugador.esImpostor
       });
     });
+
+    // Timeout de seguridad: si después de 15 segundos no todos confirmaron, forzar inicio
+    setTimeout(() => {
+      if (sala.fase === 'MOSTRANDO_PERSONAJE') {
+        console.log('Timeout: Forzando inicio de ronda');
+        sala.fase = 'RONDA';
+        io.to(codigo).emit('iniciar_ronda', {
+          jugadores: sala.jugadores.filter(j => j.estaVivo).map(j => ({
+            nombre: j.nombre,
+            estaVivo: j.estaVivo
+          })),
+          esHost: sala.hostId
+        });
+      }
+    }, 15000); // 15 segundos
   });
 
   // Confirmar que vio el personaje
@@ -188,6 +203,14 @@ io.on('connection', (socket) => {
     const jugador = salas[codigo].jugadores.find(j => j.id === socket.id);
     if (jugador) {
       jugador.visto_personaje = true;
+      
+      // Notificar al host cuántos confirmaron
+      const totalJugadores = salas[codigo].jugadores.length;
+      const confirmados = salas[codigo].jugadores.filter(j => j.visto_personaje).length;
+      io.to(salas[codigo].hostId).emit('progreso_confirmacion', {
+        confirmados,
+        total: totalJugadores
+      });
       
       // Verificar si todos vieron su personaje
       const todosVistos = salas[codigo].jugadores.every(j => j.visto_personaje);
