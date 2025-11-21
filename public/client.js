@@ -112,13 +112,19 @@ socket.on('sala_unida', ({ codigo, esHost, estado, fase }) => {
 
 socket.on('actualizar_lobby', ({ jugadores, esHost, minJugadores, puedeElegirImpostores, numImpostores }) => {
   soyHost = esHost;
+  console.log('Actualizar lobby - esHost:', esHost, 'minJugadores:', minJugadores, 'numJugadores:', jugadores.length);
+  
   const lista = document.getElementById('lista-jugadores');
   lista.innerHTML = '';
+  
+  // Identificar quién es el host (el primero de la lista)
+  const hostId = jugadores[0]?.id;
   
   jugadores.forEach(jugador => {
     const div = document.createElement('div');
     div.className = 'jugador-item';
-    if (jugador.id === socket.id) {
+    // Poner corona solo al host
+    if (jugador.id === hostId) {
       div.className += ' host';
     }
     div.textContent = jugador.nombre;
