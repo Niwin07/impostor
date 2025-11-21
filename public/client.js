@@ -117,7 +117,10 @@ socket.on('actualizar_lobby', ({ jugadores, esHost, minJugadores, puedeElegirImp
   
   jugadores.forEach(jugador => {
     const div = document.createElement('div');
-    div.className = 'jugador-item' + (jugador.id === socket.id ? ' host' : '');
+    div.className = 'jugador-item';
+    if (jugador.id === socket.id) {
+      div.className += ' host';
+    }
     div.textContent = jugador.nombre;
     lista.appendChild(div);
   });
