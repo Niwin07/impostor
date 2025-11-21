@@ -57,12 +57,14 @@ io.on('connection', (socket) => {
     socket.join(codigo);
     socket.emit('sala_creada', { codigo, esHost: true });
     
-    // Enviar actualización a cada jugador individualmente
-    salas[codigo].jugadores.forEach(jugador => {
+    // Enviar actualización DESPUÉS de unirse
+    const sala = salas[codigo];
+    sala.jugadores.forEach(jugador => {
       io.to(jugador.id).emit('actualizar_lobby', {
-        jugadores: salas[codigo].jugadores,
-        esHost: jugador.id === salas[codigo].hostId,
-        minJugadores: salas[codigo].jugadores.length >= 3
+        jugadores: sala.jugadores,
+        esHost: jugador.id === sala.hostId,
+        minJugadores: sala.jugadores.length >= 3,
+        puedeElegirImpostores: sala.jugadores.length >= 6
       });
     });
   });
@@ -109,11 +111,16 @@ io.on('connection', (socket) => {
       socket.emit('sala_unida', { codigo, esHost: false, estado: 'LOBBY' });
     }
 
-    io.to(codigo).emit('actualizar_lobby', {
-      jugadores: salas[codigo].jugadores,
-      esHost: socket.id === salas[codigo].hostId,
-      minJugadores: salas[codigo].jugadores.length >= 3,
-      puedeElegirImpostores: salas[codigo].jugadores.length >= 6
+    // Enviar actualización DESPUÉS de agregar al jugador
+    const sala = salas[codigo];
+    sala.jugadores.forEach(jugador => {
+      io.to(jugador.id).emit('actualizar_lobby', {
+        jugadores: sala.jugadores,
+        esHost: jugador.id === sala.hostId,
+        minJugadores: sala.jugadores.length >= 3,
+        puedeElegirImpostores: sala.jugadores.length >= 6,
+        numImpostores: sala.configuracion.numImpostores
+      });
     });
   });
 
@@ -121,12 +128,16 @@ io.on('connection', (socket) => {
   socket.on('cambiar_impostores', ({ codigo, num }) => {
     if (salas[codigo] && socket.id === salas[codigo].hostId) {
       salas[codigo].configuracion.numImpostores = num;
-      io.to(codigo).emit('actualizar_lobby', {
-        jugadores: salas[codigo].jugadores,
-        esHost: socket.id === salas[codigo].hostId,
-        minJugadores: salas[codigo].jugadores.length >= 3,
-        puedeElegirImpostores: salas[codigo].jugadores.length >= 6,
-        numImpostores: num
+      
+      // Enviar actualización individualizada a cada jugador
+      salas[codigo].jugadores.forEach(jugador => {
+        io.to(jugador.id).emit('actualizar_lobby', {
+          jugadores: salas[codigo].jugadores,
+          esHost: jugador.id === salas[codigo].hostId,
+          minJugadores: salas[codigo].jugadores.length >= 3,
+          puedeElegirImpostores: salas[codigo].jugadores.length >= 6,
+          numImpostores: num
+        });
       });
     }
   });
@@ -283,11 +294,14 @@ io.on('connection', (socket) => {
     salas[codigo].votos_ronda_actual = {};
     salas[codigo].eliminado_actual = null;
 
-    io.to(codigo).emit('actualizar_lobby', {
-      jugadores: salas[codigo].jugadores,
-      esHost: socket.id === salas[codigo].hostId,
-      minJugadores: salas[codigo].jugadores.length >= 3,
-      puedeElegirImpostores: salas[codigo].jugadores.length >= 6
+    // Enviar actualización individualizada a cada jugador
+    salas[codigo].jugadores.forEach(jugador => {
+      io.to(jugador.id).emit('actualizar_lobby', {
+        jugadores: salas[codigo].jugadores,
+        esHost: jugador.id === salas[codigo].hostId,
+        minJugadores: salas[codigo].jugadores.length >= 3,
+        puedeElegirImpostores: salas[codigo].jugadores.length >= 6
+      });
     });
   });
 
@@ -321,11 +335,14 @@ io.on('connection', (socket) => {
           if (sala.jugadores.length === 0) {
             delete salas[codigo];
           } else {
-            io.to(codigo).emit('actualizar_lobby', {
-              jugadores: sala.jugadores,
-              esHost: sala.hostId,
-              minJugadores: sala.jugadores.length >= 3,
-              puedeElegirImpostores: sala.jugadores.length >= 6
+            // Enviar actualización individualizada a cada jugador
+            sala.jugadores.forEach(jugador => {
+              io.to(jugador.id).emit('actualizar_lobby', {
+                jugadores: sala.jugadores,
+                esHost: jugador.id === sala.hostId,
+                minJugadores: sala.jugadores.length >= 3,
+                puedeElegirImpostores: sala.jugadores.length >= 6
+              });
             });
           }
         }
