@@ -56,10 +56,14 @@ io.on('connection', (socket) => {
 
     socket.join(codigo);
     socket.emit('sala_creada', { codigo, esHost: true });
-    io.to(codigo).emit('actualizar_lobby', {
-      jugadores: salas[codigo].jugadores,
-      esHost: socket.id === salas[codigo].hostId,
-      minJugadores: salas[codigo].jugadores.length >= 3
+    
+    // Enviar actualización a cada jugador individualmente
+    salas[codigo].jugadores.forEach(jugador => {
+      io.to(jugador.id).emit('actualizar_lobby', {
+        jugadores: salas[codigo].jugadores,
+        esHost: jugador.id === salas[codigo].hostId,
+        minJugadores: salas[codigo].jugadores.length >= 3
+      });
     });
   });
 
