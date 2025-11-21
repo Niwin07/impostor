@@ -69,7 +69,13 @@ document.querySelectorAll('[data-impostores]').forEach(btn => {
 // Evento de personaje visto
 document.getElementById('btn-entendido').addEventListener('click', () => {
   socket.emit('personaje_visto', miSala);
-  mostrarPantalla(pantallaRonda);
+  document.getElementById('btn-entendido').disabled = true;
+  document.getElementById('btn-entendido').textContent = 'Esperando a los demás...';
+});
+
+// Botón para forzar inicio (solo host)
+document.getElementById('btn-forzar-inicio').addEventListener('click', () => {
+  socket.emit('forzar_inicio_ronda', miSala);
 });
 
 // Evento abrir votación
@@ -165,6 +171,12 @@ socket.on('mostrar_personaje', ({ personaje, esImpostor }) => {
   const titulo = document.getElementById('titulo-personaje');
   const nombre = document.getElementById('nombre-personaje');
   const card = document.getElementById('card-personaje');
+  const btnEntendido = document.getElementById('btn-entendido');
+  const progresoHost = document.getElementById('progreso-host');
+  
+  // Resetear botón
+  btnEntendido.disabled = false;
+  btnEntendido.textContent = 'Entendido';
   
   if (esImpostor) {
     titulo.textContent = 'Eres el';
@@ -176,10 +188,20 @@ socket.on('mostrar_personaje', ({ personaje, esImpostor }) => {
     card.classList.remove('impostor');
   }
   
+  // Mostrar progreso solo al host
+  progresoHost.style.display = soyHost ? 'block' : 'none';
+  
   mostrarPantalla(pantallaPersonaje);
 });
 
+socket.on('progreso_confirmacion', ({ confirmados, total }) => {
+  const textoProgreso = document.getElementById('texto-progreso');
+  textoProgreso.textContent = `${confirmados}/${total} jugadores confirmaron`;
+});
+
 socket.on('iniciar_ronda', ({ jugadores, esHost }) => {
+  console.log('Iniciar ronda - esHost:', esHost, 'jugadores:', jugadores);
+  
   const lista = document.getElementById('jugadores-vivos-ronda');
   lista.innerHTML = '<h3>Jugadores Vivos:</h3>';
   
@@ -191,7 +213,7 @@ socket.on('iniciar_ronda', ({ jugadores, esHost }) => {
   });
   
   const controlesHostRonda = document.getElementById('controles-host-ronda');
-  controlesHostRonda.style.display = esHost === socket.id ? 'block' : 'none';
+  controlesHostRonda.style.display = esHost ? 'block' : 'none';
   
   mostrarPantalla(pantallaRonda);
 });
