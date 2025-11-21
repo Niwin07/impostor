@@ -186,12 +186,19 @@ io.on('connection', (socket) => {
       if (sala.fase === 'MOSTRANDO_PERSONAJE') {
         console.log('Timeout: Forzando inicio de ronda');
         sala.fase = 'RONDA';
-        io.to(codigo).emit('iniciar_ronda', {
-          jugadores: sala.jugadores.filter(j => j.estaVivo).map(j => ({
-            nombre: j.nombre,
-            estaVivo: j.estaVivo
-          })),
-          esHost: sala.hostId
+        
+        const jugadoresVivos = sala.jugadores.filter(j => j.estaVivo);
+        const datosJugadores = jugadoresVivos.map(j => ({
+          nombre: j.nombre,
+          estaVivo: j.estaVivo
+        }));
+
+        // Enviar a cada jugador individualmente
+        sala.jugadores.forEach(jugador => {
+          io.to(jugador.id).emit('iniciar_ronda', {
+            jugadores: datosJugadores,
+            esHost: sala.hostId === jugador.id
+          });
         });
       }
     }, 15000); // 15 segundos
@@ -216,15 +223,43 @@ io.on('connection', (socket) => {
       const todosVistos = salas[codigo].jugadores.every(j => j.visto_personaje);
       if (todosVistos) {
         salas[codigo].fase = 'RONDA';
-        io.to(codigo).emit('iniciar_ronda', {
-          jugadores: salas[codigo].jugadores.filter(j => j.estaVivo).map(j => ({
-            nombre: j.nombre,
-            estaVivo: j.estaVivo
-          })),
-          esHost: salas[codigo].hostId
+        
+        const jugadoresVivos = salas[codigo].jugadores.filter(j => j.estaVivo);
+        const datosJugadores = jugadoresVivos.map(j => ({
+          nombre: j.nombre,
+          estaVivo: j.estaVivo
+        }));
+
+        // Enviar a cada jugador individualmente
+        salas[codigo].jugadores.forEach(jugador => {
+          io.to(jugador.id).emit('iniciar_ronda', {
+            jugadores: datosJugadores,
+            esHost: salas[codigo].hostId === jugador.id
+          });
         });
       }
     }
+  });
+
+  // Forzar inicio de ronda (solo host)
+  socket.on('forzar_inicio_ronda', (codigo) => {
+    if (!salas[codigo] || socket.id !== salas[codigo].hostId) return;
+    
+    salas[codigo].fase = 'RONDA';
+    
+    const jugadoresVivos = salas[codigo].jugadores.filter(j => j.estaVivo);
+    const datosJugadores = jugadoresVivos.map(j => ({
+      nombre: j.nombre,
+      estaVivo: j.estaVivo
+    }));
+
+    // Enviar a cada jugador individualmente
+    salas[codigo].jugadores.forEach(jugador => {
+      io.to(jugador.id).emit('iniciar_ronda', {
+        jugadores: datosJugadores,
+        esHost: salas[codigo].hostId === jugador.id
+      });
+    });
   });
 
   // Abrir votación (solo host)
@@ -290,12 +325,17 @@ io.on('connection', (socket) => {
       sala.votos_ronda_actual = {};
       sala.jugadores.forEach(j => j.voto = null);
 
-      io.to(codigo).emit('iniciar_ronda', {
-        jugadores: jugadoresVivos.map(j => ({
-          nombre: j.nombre,
-          estaVivo: j.estaVivo
-        })),
-        esHost: sala.hostId
+      // Enviar a TODOS los jugadores (incluso los eliminados para que vean)
+      const datosJugadores = jugadoresVivos.map(j => ({
+        nombre: j.nombre,
+        estaVivo: j.estaVivo
+      }));
+
+      sala.jugadores.forEach(jugador => {
+        io.to(jugador.id).emit('iniciar_ronda', {
+          jugadores: datosJugadores,
+          esHost: sala.hostId === jugador.id
+        });
       });
     }
   });
